@@ -1,6 +1,14 @@
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from local_db import retriever
+from langfuse.langchain import CallbackHandler
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+langfuse_handler = CallbackHandler()
+
 
 model = OllamaLLM(model="tinyllama")
 
@@ -19,7 +27,9 @@ while True:
     question = input("Type your question here(q to quit) : ")
     if question == 'q':
         break
-    reviews = retriever.invoke(question)
+    reviews = retriever.invoke(question,
+                               config={"callbacks": [langfuse_handler]})
     
-    result = chain.invoke({"reviews":reviews, "question":question})
+    result = chain.invoke({"reviews":reviews, "question":question},
+                          config={"callbacks": [langfuse_handler]})
     print(result)
